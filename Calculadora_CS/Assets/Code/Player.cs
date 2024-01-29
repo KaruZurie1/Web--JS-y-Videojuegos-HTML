@@ -1,33 +1,86 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+
 
 public class Player : MonoBehaviour
 {
-    float speed = 5f;
 
-    void Start()
+    public static Player Instance;
+
+
+    [SerializeField] private float speed;
+    [SerializeField] private GameObject bulletPrefab;
+
+
+    private PlayerInputActions playerInputAction;
+    private Rigidbody2D rb;
+    private float fireRate;
+    private bool canShoot;
+
+
+    private void Awake()
     {
-        speed = 5f;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+        playerInputAction = new PlayerInputActions();
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    // Start is called before the first frame update
+    private void Start()
     {
-        if (Input.GetKey(KeyCode.W))
+        playerInputAction.Enable();
+        playerInputAction.Standard.Shooting.performed += Shoot;
+
+        canShoot = true;
+    }
+
+    private void FixedUpdate()
+    {
+        Move();
+    }
+
+    // Update is called once per frame
+    private void Move()
+    {
+        Debug.Log(playerInputAction.Standard.Movement.ReadValue<Vector2>());
+
+        Vector3 direction = new Vector3(playerInputAction.Standard.Movement.ReadValue<Vector2>().x, playerInputAction.Standard.Movement.ReadValue<Vector2>().y, 0).normalized;
+        rb.AddForce(direction * speed);
+    }
+
+    private void Shoot(InputAction.CallbackContext context)
+    {
+        if (canShoot)
         {
-            transform.Translate(Vector3.forward * Time.deltaTime * speed);
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            transform.Translate(-1 * Vector3.forward * Time.deltaTime * speed);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Rotate(0, -1, 0);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(0, 1, 0);
+            string buttonName = context.control.name;
+
+            switch (buttonName)
+            {
+                case "upArrow":
+                    Instantiate(bulletPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+                    break;
+
+                case "downArrow":
+                    Instantiate(bulletPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+                    break;
+
+                case "leftArrow":
+                    Instantiate(bulletPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+                    break;
+
+                case "rightArrow":
+                    Instantiate(bulletPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+                    break;
+            }
         }
     }
-}
